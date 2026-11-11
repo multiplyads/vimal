@@ -418,53 +418,44 @@ src="https://www.facebook.com/tr?id=29011011185224886&ev=PageView&noscript=1"
     const STATIC_TELEGRAM_FALLBACK = "https://t.me/+3zTCtQaN8HMzMzk1";
 
     function getCookie(name) {
-      const match = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/[.*+?^${}()|[\]\\]/g, "\\    if (/^\d+$/.test(META_PIXEL_ID)) {
-      !function(f,b,e,v,n,t,s) {
-        if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-        n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;
-        s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)
-      }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', 29011011185224886);
-      fbq('track', 'PageView');
-    }") + "=([^;]*)"));
-      return match ? decodeURIComponent(match[1]) : null;
+      const prefix = name + '=';
+      const item = document.cookie.split('; ').find((part) => part.startsWith(prefix));
+      return item ? decodeURIComponent(item.slice(prefix.length)) : null;
     }
 
     async function createTrackedInvite() {
       const params = new URLSearchParams(window.location.search);
-      const response = await fetch(TRACKING_API + "/api/create-invite", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
+      const response = await fetch(TRACKING_API + '/api/create-invite', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           client_slug: CLIENT_SLUG,
           landing_url: window.location.href,
-          fbclid: params.get("fbclid"),
-          fbc: getCookie("_fbc"),
-          fbp: getCookie("_fbp"),
+          fbclid: params.get('fbclid'),
+          fbc: getCookie('_fbc'),
+          fbp: getCookie('_fbp'),
           referrer: document.referrer || null
         })
       });
-      if (!response.ok) throw new Error("Tracked invite could not be created");
+      if (!response.ok) throw new Error('Tracked invite could not be created');
       const result = await response.json();
-      if (!result.invite_url) throw new Error("Tracked invite URL missing");
+      if (!result.invite_url) throw new Error('Tracked invite URL missing');
       return result.invite_url;
     }
 
-    [document.getElementById("telegramJoin"), document.getElementById("telegramFloat")].forEach((link) => {
+    [document.getElementById('telegramJoin'), document.getElementById('telegramFloat')].forEach((link) => {
       if (!link) return;
       link.href = STATIC_TELEGRAM_FALLBACK;
-      link.addEventListener("click", async (event) => {
+      link.addEventListener('click', async (event) => {
         event.preventDefault();
-        const popup = window.open("about:blank", "_blank");
+        const popup = window.open('about:blank', '_blank');
         try {
           const inviteUrl = await createTrackedInvite();
           if (popup) popup.location.href = inviteUrl;
           else window.location.href = inviteUrl;
-          if (typeof window.fbq === "function") window.fbq("trackCustom", "Join-click");
+          if (typeof window.fbq === 'function') window.fbq('trackCustom', 'Join-click');
         } catch (error) {
-          console.error("Telegram tracking invite failed:", error);
+          console.error('Telegram tracking invite failed:', error);
           if (popup) popup.location.href = STATIC_TELEGRAM_FALLBACK;
           else window.location.href = STATIC_TELEGRAM_FALLBACK;
         }
